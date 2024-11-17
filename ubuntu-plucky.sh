@@ -12,13 +12,13 @@ check_continue() {
 check_continue
 echo "Proceeding with the install..."
 #passwords
-read "What password do you wish to use for user root?" rootpassword
-read "Your username:" username
-read "Your password:" userpassword
+read -p "What password do you wish to use for user root?" rootpassword
+read -p "Your username:" username
+read -p "Your password:" userpassword
 
 #partitioning
 fdisk -l
-read "What drive do you wish to install to? (answer as /dev/sda or /dev/vda)" drive
+read -p "What drive do you wish to install to? (answer as /dev/sda or /dev/vda)" drive
 
 sgdisk -o $drive
 sgdisk -n 1:0:+128M -t 1:EF00 $drive
