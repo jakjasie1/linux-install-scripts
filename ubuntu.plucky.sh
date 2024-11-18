@@ -15,7 +15,6 @@ echo "Proceeding with the install..."
 read -p "What password do you wish to use for user root?" rootpassword
 read -p "Your username:" username
 read -p "Your password:" userpassword
-read -p "Are you installing in a VM? yes/no:" vm
 #partitioning
 fdisk -l
 read -p "What drive do you wish to install to? (/dev/sda or /dev/nvme0n1 or /dev/vda)" drive
@@ -37,7 +36,7 @@ umount -R /mnt
 mount -o defaults,subvol=@ ${drive}2 /mnt
 mkdir /mnt/home
 mount -o defaults,subvol=@home ${drive}2 /mnt/home
-mkdir /mnt/boot/efi
+mkdir -p /mnt/boot/efi
 mount ${drive}1 /mnt/boot/efi
 
 #install utilities to host
@@ -63,15 +62,12 @@ deb https://mirroronet.pl/pub/mirrors/ubuntu plucky-security main restricted uni
 deb https://mirroronet.pl/pub/mirrors/ubuntu plucky-updates main restricted universe" > /mnt/etc/apt/sources.list
 
 #conf hostname and hosts
-echo "ubuntu-plucky" > /etc/hostname
-echo "127.0.0.1 ubuntu-plucky" >> /etc/hosts
+echo "ubuntu-plucky" > /mnt/etc/hostname
+echo "127.0.0.1 ubuntu-plucky" >> /mnt/etc/hosts
+#network config
+echo "auto lo
+iface lo inet loopback" > /mnt/etc/network/interfaces
 
-#linux firmware install
-if [[ $vm =~ ^[yes]$ ]]; then
-arch-chroot /mnt /bin/bash -c "apt install linux-firmware"
-else
-    echo installing linux
-fi
 
 #chroot config and finish it all and stuff
 arch-chroot /mnt /bin/bash -c "echo 'root:$rootpassword' | chpasswd && apt update && apt install -y kubuntu-desktop zsh-autosuggestion zsh btrfs-progs flatpak linux-headers-generic linux-image-generic initramfs-tools efibootmgr grub-efi && grub-install && update-grub && systemctl enable NetworkManager && useradd -m $username && usermod -aG sudo $username && echo '$username:$userpassword' | chpasswd && dpkg-reconfigure tzdata && dpkg-reconfigure locales && dpkg-reconfigure keyboard-configuration && chsh -s /usr/bin/zsh $username && echo "Welcome to Ubuntu Plucky Puffin 25.04 (development)" > /home/$username/.zshrc
