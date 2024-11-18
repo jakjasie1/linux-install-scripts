@@ -15,10 +15,10 @@ echo "Proceeding with the install..."
 read -p "What password do you wish to use for user root?" rootpassword
 read -p "Your username:" username
 read -p "Your password:" userpassword
-
+read -p "Are you installing in a VM? yes/no:" vm
 #partitioning
 fdisk -l
-read -p "What drive do you wish to install to? (answer as /dev/sda or /dev/vda)" drive
+read -p "What drive do you wish to install to? (/dev/sda or /dev/nvme0n1 or /dev/vda)" drive
 
 sgdisk -o $drive
 sgdisk -n 1:0:+128M -t 1:EF00 $drive
@@ -41,6 +41,7 @@ mkdir /mnt/boot/efi
 mount ${drive}1 /mnt/boot/efi
 
 #install utilities to host
+apt update
 apt install arch-install-scripts debootstrap
 cp /usr/share/debootstrap/scripts/gutsy /usr/share/debootstrap/scripts/plucky
 
@@ -65,7 +66,15 @@ deb https://mirroronet.pl/pub/mirrors/ubuntu plucky-updates main restricted univ
 echo "ubuntu-plucky" > /etc/hostname
 echo "127.0.0.1 ubuntu-plucky" >> /etc/hosts
 
-arch-chroot /mnt /bin/bash -c "echo 'root:$rootpassword' | chpasswd && apt update && apt install -y kubuntu-desktop zsh btrfs-progs linux-firmware flatpak linux-headers-generic linux-image-generic initramfs-tools efibootmgr grub-efi && grub-install && update-grub && systemctl enable NetworkManager && useradd -m $username && usermod -aG sudo $username && echo '$username:$userpassword' | chpasswd && dpkg-reconfigure tzdata && dpkg-reconfigure locales && dpkg-reconfigure keyboard-configuration && chsh -s /usr/bin/zsh $username"
+#linux firmware install
+if [[ $vm =~ ^[yes]$ ]]; then
+arch-chroot /mnt /bin/bash -c "apt install linux-firmware"
+else
+    echo installing linux
+fi
+
+#chroot config and finish it all and stuff
+arch-chroot /mnt /bin/bash -c "echo 'root:$rootpassword' | chpasswd && apt update && apt install -y kubuntu-desktop zsh-autosuggestion zsh btrfs-progs flatpak linux-headers-generic linux-image-generic initramfs-tools efibootmgr grub-efi && grub-install && update-grub && systemctl enable NetworkManager && useradd -m $username && usermod -aG sudo $username && echo '$username:$userpassword' | chpasswd && dpkg-reconfigure tzdata && dpkg-reconfigure locales && dpkg-reconfigure keyboard-configuration && chsh -s /usr/bin/zsh $username && echo "Welcome to Ubuntu Plucky Puffin 25.04 (development)" > /home/$username/.zshrc
 
 
 
