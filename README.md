@@ -4,7 +4,7 @@ Ubuntu Plucky Puffin install script
 2. switch to root user!!!
   `sudo su`
 4. download and run the script
-`wget https://github.com/jakjasie1/linux-install-scripts/blob/main/ubuntu.plucky.sh && chmod +x ubuntu.plucky.sh && ./ubuntu-plucky.sh`
+`wget https://raw.githubusercontent.com/jakjasie1/linux-install-scripts/refs/heads/main/ubuntu.plucky.sh && chmod +x ubuntu.plucky.sh && ./ubuntu-plucky.sh`
 5. follow the instructions later.
 
 
